@@ -104,6 +104,15 @@ async function cargarGrupos() {
     opt.textContent = d.data().nombre;
     select.appendChild(opt);
   });
+
+  // Algunos navegadores restauran el valor de un <select> al recargar la
+  // página SIN disparar el evento "change" (por ejemplo, al volver de
+  // segundo plano en el celular). Si eso deja un grupo ya seleccionado sin
+  // que se hayan cargado sus alumnos, lo forzamos aquí manualmente.
+  if (select.value) {
+    grupoActivo = select.value;
+    await cargarAlumnos();
+  }
 }
 
 on('grupo-select', 'change', async (e) => {
