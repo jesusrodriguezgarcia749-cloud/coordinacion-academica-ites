@@ -10,6 +10,10 @@
 // El usuario de Coordinación es un usuario DISTINTO al del docente, dado de
 // alta en Firebase Authentication de este mismo proyecto — así cada quien
 // entra con su propio correo y contraseña, aunque lean la misma base.
+//
+// "sitioUrl" es la URL en vivo del Aula Virtual de esa materia — se usa
+// para descargar el banco de reactivos del examen (data/examen_bloqueN.json),
+// que vive en ESE repo, no en el de Coordinación.
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -22,6 +26,7 @@ export const MATERIAS = [
   {
     id: 'bases-culinarias',
     nombre: 'Bases Culinarias',
+    sitioUrl: 'https://jesusrodriguezgarcia749-cloud.github.io/bases-culinarias/',
     firebaseConfig: {
       apiKey: "AIzaSyCrn6_dvsj1qPvTYx05ztaW3R4p_7bGQQ0",
       authDomain: "bases-culinarias.firebaseapp.com",
@@ -35,9 +40,15 @@ export const MATERIAS = [
   // {
   //   id: 'expresion-oral-escrita',
   //   nombre: 'Expresión Oral y Escrita',
+  //   sitioUrl: 'https://jesusrodriguezgarcia749-cloud.github.io/expresion-oral-escrita/',
   //   firebaseConfig: { ... },
   // },
 ];
+
+// El usuario de Coordinación vive en el proyecto de Firebase de esta
+// materia — el login SIEMPRE se hace contra ella, sin importar qué materia
+// se esté consultando en un momento dado.
+export const MATERIA_LOGIN = 'bases-culinarias';
 
 // Inicializa Firebase para CADA materia y guarda su app/auth/db por id, para
 // poder cambiar de materia sin perder la conexión a las demás.
@@ -63,4 +74,9 @@ export function authDe(materiaId) {
 
 export function dbDe(materiaId) {
   return instanciaDe(materiaId).db;
+}
+
+export function sitioDe(materiaId) {
+  const materia = MATERIAS.find(m => m.id === materiaId);
+  return materia ? materia.sitioUrl : '';
 }
