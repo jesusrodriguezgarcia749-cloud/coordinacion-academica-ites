@@ -1,0 +1,98 @@
+/* ===========================================================
+   COORDINACIÓN ACADÉMICA — sistema de diseño
+   Paleta: carbón / pergamino / azafrán / pimentón / salvia
+   (mismo sistema visual que las Aulas Virtuales, para sentirse
+   parte de la misma familia de plataformas institucionales)
+   =========================================================== */
+
+:root{
+  --charcoal:#1C1B19;
+  --charcoal-soft:#2A2825;
+  --parchment:#EFE7D8;
+  --cream:#FAF7F0;
+  --saffron:#C98A2C;
+  --saffron-dark:#A66F1E;
+  --paprika:#A63D2F;
+  --sage:#6B7A5E;
+  --ink:#232019;
+  --ink-soft:#5B5548;
+  --line:#DCD2BC;
+
+  --font-display:'Fraunces', Georgia, serif;
+  --font-body:'Public Sans', -apple-system, sans-serif;
+
+  --radius:14px;
+  --shadow-card:0 10px 30px -14px rgba(28,27,25,0.35);
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--parchment);
+  color:var(--ink);
+  font-family:var(--font-body);
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:var(--font-display); color:var(--ink); margin:0 0 .4em;}
+p{margin:0 0 1em;}
+a{color:inherit;}
+img{max-width:100%; display:block;}
+.wrap{max-width:1140px; margin:0 auto; padding:0 24px;}
+.sr-only{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0);}
+
+/* focus visibility */
+a:focus-visible, button:focus-visible, input:focus-visible{
+  outline:3px solid var(--saffron);
+  outline-offset:2px;
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important; transition:none !important;}
+}
+
+/* ---------------- HEADER ---------------- */
+.site-header{
+  position:sticky; top:0; z-index:40;
+  background:rgba(239,231,216,0.92);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);
+}
+.header-inner{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 24px;
+}
+.brand{display:flex; align-items:center; gap:10px; text-decoration:none;}
+.brand-mark{
+  width:36px; height:36px; border-radius:8px;
+  background:var(--charcoal); color:var(--saffron);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-weight:700; font-size:.95rem;
+}
+.brand-text{font-family:var(--font-display); font-weight:600; font-size:1.05rem; color:var(--ink);}
+
+/* ---------------- BOTONES ---------------- */
+.btn{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:13px 26px; border-radius:999px; font-weight:600; font-size:.95rem;
+  text-decoration:none; border:1px solid transparent; cursor:pointer;
+  transition:transform .15s ease, background .15s ease;
+}
+.btn:hover{transform:translateY(-2px);}
+.btn-primary{background:var(--saffron); color:var(--charcoal);}
+.btn-primary:hover{background:#E0A24A;}
+.btn-ghost-dark{
+  border:1.5px solid var(--charcoal); color:var(--charcoal); background:transparent;
+  padding:13px 26px; border-radius:999px; font-weight:600; font-size:.95rem; cursor:pointer;
+}
+.btn-ghost-dark:hover{background:var(--charcoal); color:var(--cream);}
+.btn-ghost-dark:disabled{opacity:.5; cursor:not-allowed; transform:none;}
+
+.reporte-botones{display:flex; gap:10px; flex-wrap:wrap;}
+
+/* ---------------- FOOTER ---------------- */
+.site-footer{
+  padding:28px 0; text-align:center; font-size:.85rem; color:var(--ink-soft);
+  border-top:1px solid var(--line);
+}
