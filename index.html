@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coordinación Académica — ITES René Descartes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/admin.css">
+<link rel="stylesheet" href="css/progreso.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">CA</span>
+      <span class="brand-text">Coordinación Académica</span>
+    </a>
+  </div>
+</header>
+
+<section id="login-screen" class="admin-wrap">
+  <div class="login-card">
+    <h1>Coordinación Académica</h1>
+    <p class="login-sub">Acceso restringido — solo cuenta institucional.</p>
+    <form id="login-form">
+      <label for="login-email" class="sr-only">Correo</label>
+      <input id="login-email" type="email" placeholder="coordinacion@itesrenedescartes.edu.mx" required autocomplete="email">
+      <label for="login-pass" class="sr-only">Contraseña</label>
+      <input id="login-pass" type="password" placeholder="Contraseña" required autocomplete="current-password">
+      <button type="submit" class="btn btn-primary">Entrar</button>
+      <p id="login-error" class="login-error" hidden></p>
+    </form>
+  </div>
+</section>
+
+<section id="app-screen" class="admin-wrap" hidden>
+
+  <div class="admin-topbar">
+    <div class="group-select-wrap">
+      <label for="materia-select" class="sr-only">Materia</label>
+      <select id="materia-select"></select>
+    </div>
+    <button id="btn-logout" class="btn-logout">Salir</button>
+  </div>
+
+  <div class="admin-topbar" style="margin-top:10px;">
+    <div class="group-select-wrap">
+      <label for="grupo-select" class="sr-only">Grupo</label>
+      <select id="grupo-select"><option value="">— Elige un grupo —</option></select>
+    </div>
+  </div>
+
+  <label for="alumno-select" class="field-label">Alumno</label>
+  <select id="alumno-select"><option value="">— Elige un alumno —</option></select>
+  <p id="alumno-empty" class="empty-state" hidden>Elige un grupo primero.</p>
+
+  <div id="alumno-panel" hidden>
+
+    <div class="bloques-activos-card">
+      <h3 class="section-title" style="margin-top:0;">Descargas para revisión</h3>
+      <p class="field-hint">Elige qué quieres descargar de este alumno. El examen y la asistencia se descargan por bloque.</p>
+
+      <label for="descarga-bloque" class="field-label">Bloque (para examen y asistencia)</label>
+      <select id="descarga-bloque">
+        <option value="1">Bloque 1</option>
+        <option value="2">Bloque 2</option>
+        <option value="3">Bloque 3</option>
+      </select>
+
+      <div class="reporte-botones" style="flex-wrap:wrap;">
+        <button id="btn-descargar-examen" class="btn btn-ghost-dark">Examen resuelto (PDF)</button>
+        <button id="btn-descargar-asistencia" class="btn btn-ghost-dark">Asistencia (PDF)</button>
+        <button id="btn-descargar-participacion" class="btn btn-ghost-dark">Participación (PDF)</button>
+        <button id="btn-descargar-practicas" class="btn btn-ghost-dark">Prácticas de cocina (PDF)</button>
+      </div>
+      <div class="reporte-botones" style="margin-top:10px;">
+        <button id="btn-descargar-concentrado" class="btn btn-primary">Descargar concentrado (PDF)</button>
+      </div>
+      <p id="descarga-msg" class="save-msg" hidden></p>
+    </div>
+
+    <h3 class="section-title">Resumen del alumno</h3>
+    <div id="alumno-resumen"></div>
+  </div>
+
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>Coordinación Académica · ITES René Descartes · Acceso restringido.</p>
+  </div>
+</footer>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
