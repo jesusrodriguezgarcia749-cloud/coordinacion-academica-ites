@@ -1,31 +1,34 @@
 // firebase-config.js — Coordinación Académica
 //
-// Esta app NO tiene su propio proyecto de Firebase: se conecta al mismo
-// proyecto de "bases-culinarias", porque Coordinación solo necesita LEER
-// los datos que el docente ya captura ahí (no escribe nada). Cuando se
-// agreguen más materias (Expresión Oral y Escrita, la nueva de Historia/
-// Cultura de las Cocinas), se les agrega su propio bloque de configuración
-// aquí abajo y aparecerán como pestañas/materias adicionales en la app.
+// Esta app NO tiene su propio proyecto de Firebase: se conecta a los
+// proyectos que cada materia ya usa (Coordinación solo LEE, nunca escribe).
 //
-// El usuario de Coordinación es un usuario DISTINTO al del docente, dado de
-// alta en Firebase Authentication de este mismo proyecto — así cada quien
-// entra con su propio correo y contraseña, aunque lean la misma base.
+// "esquema" indica qué fórmula de calificación usa esa materia:
+//   'bloques'   → Bases Culinarias (3 Bloques de 100 pts: Participación,
+//                 Ensayos, Prácticas, Asistencia, Examen) — calculo.js
+//   'parciales' → Origen de las Cocinas / Expresión Oral y Escrita
+//                 (Parcial 1, Parcial 2, Examen Final) — calculo-parciales.js
+// app.js usa este campo para decidir qué lógica de cálculo y qué reportes
+// aplicar a cada materia, en vez de asumir que todas son iguales.
 //
 // "sitioUrl" es la URL en vivo del Aula Virtual de esa materia — se usa
-// para descargar el banco de reactivos del examen (data/examen_bloqueN.json),
+// para descargar el banco de reactivos del examen (data/examen_*.json),
 // que vive en ESE repo, no en el de Coordinación.
+//
+// El usuario de Coordinación es un usuario DISTINTO al del docente, dado de
+// alta en Firebase Authentication de MATERIA_LOGIN — así cada quien entra
+// con su propio correo y contraseña, aunque lean la misma base.
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ---------- Materias disponibles ----------
-// Cada materia es un proyecto de Firebase propio. Por ahora solo existe
-// Bases Culinarias; las demás se agregan aquí cuando estén listas.
 export const MATERIAS = [
   {
     id: 'bases-culinarias',
     nombre: 'Bases Culinarias',
+    asignatura: 'Bases Culinarias · Clave 0101 · Primer cuatrimestre',
+    esquema: 'bloques',
     sitioUrl: 'https://jesusrodriguezgarcia749-cloud.github.io/bases-culinarias/',
     firebaseConfig: {
       apiKey: "AIzaSyCrn6_dvsj1qPvTYx05ztaW3R4p_7bGQQ0",
@@ -36,10 +39,27 @@ export const MATERIAS = [
       appId: "1:810616202608:web:5a47712549207a9d0fdbb5"
     },
   },
+  {
+    id: 'origen-de-las-cocinas',
+    nombre: 'Origen de las Cocinas',
+    asignatura: 'Origen de las Cocinas · Clave 0102 · Primer cuatrimestre',
+    esquema: 'parciales',
+    sitioUrl: 'https://jesusrodriguezgarcia749-cloud.github.io/origen-de-las-cocinas/',
+    firebaseConfig: {
+      apiKey: "AIzaSyBJwnXXGvgxDF8jpdWYCiP4GPS7n_cMK98",
+      authDomain: "origen-de-las-cocinas.firebaseapp.com",
+      projectId: "origen-de-las-cocinas",
+      storageBucket: "origen-de-las-cocinas.firebasestorage.app",
+      messagingSenderId: "951291486308",
+      appId: "1:951291486308:web:eb133e2500ffe60b43ff71"
+    },
+  },
   // Próximamente:
   // {
   //   id: 'expresion-oral-escrita',
   //   nombre: 'Expresión Oral y Escrita',
+  //   asignatura: 'Expresión Oral y Escrita · Primer cuatrimestre',
+  //   esquema: 'parciales',
   //   sitioUrl: 'https://jesusrodriguezgarcia749-cloud.github.io/expresion-oral-escrita/',
   //   firebaseConfig: { ... },
   // },
@@ -79,4 +99,14 @@ export function dbDe(materiaId) {
 export function sitioDe(materiaId) {
   const materia = MATERIAS.find(m => m.id === materiaId);
   return materia ? materia.sitioUrl : '';
+}
+
+export function esquemaDe(materiaId) {
+  const materia = MATERIAS.find(m => m.id === materiaId);
+  return materia ? materia.esquema : 'bloques';
+}
+
+export function asignaturaDe(materiaId) {
+  const materia = MATERIAS.find(m => m.id === materiaId);
+  return materia ? materia.asignatura : '';
 }
