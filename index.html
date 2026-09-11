@@ -28,7 +28,7 @@
     <p class="login-sub">Acceso restringido — solo cuenta institucional.</p>
     <form id="login-form">
       <label for="login-email" class="sr-only">Correo</label>
-      <input id="login-email" type="email" placeholder="coordinacion@itesrenedescartes.edu.mx" required autocomplete="email">
+      <input id="login-email" type="email" placeholder="tu-correo@itesrenedescartes.edu.mx" required autocomplete="email">
       <label for="login-pass" class="sr-only">Contraseña</label>
       <input id="login-pass" type="password" placeholder="Contraseña" required autocomplete="current-password">
       <button type="submit" class="btn btn-primary">Entrar</button>
@@ -41,10 +41,17 @@
 
   <div class="admin-topbar">
     <div class="group-select-wrap">
+      <label for="carrera-select" class="sr-only">Carrera</label>
+      <select id="carrera-select"></select>
+    </div>
+    <button id="btn-logout" class="btn-logout">Salir</button>
+  </div>
+
+  <div class="admin-topbar" style="margin-top:10px;">
+    <div class="group-select-wrap">
       <label for="materia-select" class="sr-only">Materia</label>
       <select id="materia-select"></select>
     </div>
-    <button id="btn-logout" class="btn-logout">Salir</button>
   </div>
 
   <div class="admin-topbar" style="margin-top:10px;">
