@@ -1,9 +1,10 @@
 // app.js — Coordinación Académica
-// Login → elige materia → elige grupo → elige alumno → ve su resumen y
-// descarga lo que necesite. Es de SOLO LECTURA: esta app nunca escribe
-// nada en Firestore.
+// Login → elige carrera → elige materia → elige grupo → elige alumno → ve
+// su resumen y descarga lo que necesite. Es de SOLO LECTURA: esta app
+// nunca escribe nada en Firestore.
 //
-// Cada materia tiene un "esquema" de calificación (ver firebase-config.js):
+// Cada materia pertenece a una "carrera" (licenciatura) y tiene un
+// "esquema" de calificación (ver firebase-config.js):
 //   'bloques'   → Bases Culinarias           → calculo.js / reporte.js
 //   'parciales' → Origen de las Cocinas, etc. → calculo-parciales.js / reporte-parciales.js
 // Todo lo que depende del esquema está en las funciones marcadas "según
@@ -16,7 +17,10 @@ import {
   collection, doc, getDoc, getDocs, query, orderBy,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-import { MATERIAS, MATERIA_LOGIN, authDe, dbDe, sitioDe, esquemaDe, asignaturaDe } from "./firebase-config.js";
+import {
+  MATERIAS, CARRERAS, materiasDeCarrera, MATERIA_LOGIN,
+  authDe, dbDe, sitioDe, esquemaDe, asignaturaDe,
+} from "./firebase-config.js";
 
 import { calcularBloque } from "./calculo.js";
 import {
@@ -32,7 +36,8 @@ import {
 
 const auth = authDe(MATERIA_LOGIN);
 
-let materiaActiva = MATERIAS[0]?.id || null;
+let carreraActiva = CARRERAS[0] || null;
+let materiaActiva = null;
 let grupoActivo = null;
 let alumnosCache = [];
 let bancosExamenCache = {}; // por materia+bloque/parcial
@@ -56,7 +61,8 @@ onAuthStateChanged(auth, async user => {
   if (user) {
     document.getElementById('login-screen').hidden = true;
     document.getElementById('app-screen').hidden = false;
-    poblarMaterias();
+    poblarCarreras();
+    poblarMateriasDeCarreraActiva();
     ajustarUIPorEsquema();
     await cargarGrupos();
   } else {
@@ -90,16 +96,41 @@ on('login-form', 'submit', async (e) => {
 
 on('btn-logout', 'click', () => signOut(auth));
 
-// ---------- MATERIA ----------
-function poblarMaterias() {
-  const select = document.getElementById('materia-select');
+// ---------- CARRERA ----------
+function poblarCarreras() {
+  const select = document.getElementById('carrera-select');
   if (select.options.length > 0) return; // ya poblado
-  MATERIAS.forEach(m => {
+  CARRERAS.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    select.appendChild(opt);
+  });
+  select.value = carreraActiva;
+}
+
+on('carrera-select', 'change', async (e) => {
+  carreraActiva = e.target.value;
+  materiaActiva = null;
+  poblarMateriasDeCarreraActiva();
+  grupoActivo = null;
+  ocultarPanelAlumno();
+  ajustarUIPorEsquema();
+  await cargarGrupos();
+});
+
+// ---------- MATERIA ----------
+function poblarMateriasDeCarreraActiva() {
+  const select = document.getElementById('materia-select');
+  select.innerHTML = '';
+  const materias = materiasDeCarrera(carreraActiva);
+  materias.forEach(m => {
     const opt = document.createElement('option');
     opt.value = m.id;
     opt.textContent = m.nombre;
     select.appendChild(opt);
   });
+  materiaActiva = materias[0]?.id || null;
   select.value = materiaActiva;
 }
 
@@ -151,6 +182,7 @@ function ajustarUIPorEsquema() {
 async function cargarGrupos() {
   const select = document.getElementById('grupo-select');
   select.innerHTML = '<option value="">— Elige un grupo —</option>';
+  if (!materiaActiva) return;
   const snap = await getDocs(query(collection(db(), 'grupos'), orderBy('nombre')));
   snap.forEach(d => {
     const opt = document.createElement('option');
