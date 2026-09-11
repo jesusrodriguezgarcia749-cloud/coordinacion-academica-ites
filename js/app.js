@@ -1,8 +1,13 @@
 // app.js — Coordinación Académica
 // Login → elige materia → elige grupo → elige alumno → ve su resumen y
-// descarga lo que necesite (examen, asistencia, participación, prácticas,
-// o el concentrado general). Es de SOLO LECTURA: esta app nunca escribe
+// descarga lo que necesite. Es de SOLO LECTURA: esta app nunca escribe
 // nada en Firestore.
+//
+// Cada materia tiene un "esquema" de calificación (ver firebase-config.js):
+//   'bloques'   → Bases Culinarias           → calculo.js / reporte.js
+//   'parciales' → Origen de las Cocinas, etc. → calculo-parciales.js / reporte-parciales.js
+// Todo lo que depende del esquema está en las funciones marcadas "según
+// esquema" — el resto (login, selector de grupo/alumno) es igual para todas.
 
 import {
   getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut,
@@ -11,19 +16,26 @@ import {
   collection, doc, getDoc, getDocs, query, orderBy,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-import { MATERIAS, MATERIA_LOGIN, authDe, dbDe, sitioDe } from "./firebase-config.js";
+import { MATERIAS, MATERIA_LOGIN, authDe, dbDe, sitioDe, esquemaDe, asignaturaDe } from "./firebase-config.js";
+
 import { calcularBloque } from "./calculo.js";
 import {
   reporteExamenAlumno, reporteAsistenciaAlumno,
   reporteParticipacionAlumno, reportePracticasAlumno, reporteConcentradoAlumno,
 } from "./reporte.js";
 
+import { calcularParcial, calcularCuatrimestre } from "./calculo-parciales.js";
+import {
+  reporteExamenParcial, reporteAsistenciaParcial,
+  reporteTareasYParticipacionAlumno, reporteConcentradoParcial,
+} from "./reporte-parciales.js";
+
 const auth = authDe(MATERIA_LOGIN);
 
 let materiaActiva = MATERIAS[0]?.id || null;
 let grupoActivo = null;
 let alumnosCache = [];
-let bancosExamenCache = {}; // por materia+bloque
+let bancosExamenCache = {}; // por materia+bloque/parcial
 
 function on(id, evento, fn) {
   const el = document.getElementById(id);
@@ -35,12 +47,17 @@ function db() {
   return dbDe(materiaActiva);
 }
 
+function esquemaActivo() {
+  return esquemaDe(materiaActiva);
+}
+
 // ---------- LOGIN ----------
 onAuthStateChanged(auth, async user => {
   if (user) {
     document.getElementById('login-screen').hidden = true;
     document.getElementById('app-screen').hidden = false;
     poblarMaterias();
+    ajustarUIPorEsquema();
     await cargarGrupos();
   } else {
     document.getElementById('login-screen').hidden = false;
@@ -90,8 +107,45 @@ on('materia-select', 'change', async (e) => {
   materiaActiva = e.target.value;
   grupoActivo = null;
   ocultarPanelAlumno();
+  ajustarUIPorEsquema();
   await cargarGrupos();
 });
+
+// Cambia las etiquetas/opciones de la interfaz según si la materia activa
+// usa esquema de Bloques o de Parciales — así el mismo HTML sirve para
+// ambas sin duplicar pantallas.
+function ajustarUIPorEsquema() {
+  const esquema = esquemaActivo();
+  const selectDescarga = document.getElementById('descarga-bloque');
+  const labelDescarga = document.querySelector('label[for="descarga-bloque"]');
+  const btnParticipacion = document.getElementById('btn-descargar-participacion');
+  const btnPracticas = document.getElementById('btn-descargar-practicas');
+
+  if (esquema === 'parciales') {
+    if (labelDescarga) labelDescarga.textContent = 'Parcial (para examen y asistencia)';
+    if (selectDescarga) {
+      selectDescarga.innerHTML = `
+        <option value="p1">Parcial 1</option>
+        <option value="p2">Parcial 2</option>
+        <option value="final">Examen Final</option>`;
+    }
+    if (btnParticipacion) btnParticipacion.textContent = 'Tareas y Participación (PDF)';
+    // Origen de las Cocinas no lleva un catálogo de "prácticas" separado
+    // como Bases Culinarias (solo un examen práctico dentro del Parcial 2,
+    // que ya se ve en el examen de ese parcial) — se oculta el botón.
+    if (btnPracticas) btnPracticas.style.display = 'none';
+  } else {
+    if (labelDescarga) labelDescarga.textContent = 'Bloque (para examen y asistencia)';
+    if (selectDescarga) {
+      selectDescarga.innerHTML = `
+        <option value="1">Bloque 1</option>
+        <option value="2">Bloque 2</option>
+        <option value="3">Bloque 3</option>`;
+    }
+    if (btnParticipacion) btnParticipacion.textContent = 'Participación (PDF)';
+    if (btnPracticas) btnPracticas.style.display = '';
+  }
+}
 
 // ---------- GRUPO ----------
 async function cargarGrupos() {
@@ -163,8 +217,10 @@ function alumnoActual() {
   return alumnosCache.find(a => a.id === id);
 }
 
-// ---------- DATOS DEL ALUMNO (mismo patrón que admin.js) ----------
-async function datosDeAlumno(alumnoId) {
+// ---------- DATOS DEL ALUMNO (según esquema) ----------
+
+// Esquema 'bloques' (Bases Culinarias) — sin cambios respecto al original.
+async function datosDeAlumnoBloques(alumnoId) {
   const base = ['grupos', grupoActivo, 'alumnos', alumnoId];
   const [actSnap, evalSnap, ensSnap, asisSnap, exaSnap, intSnap, ajusSnap] = await Promise.all([
     getDocs(collection(db(), ...base, 'actividades')).catch(() => null),
@@ -196,8 +252,40 @@ async function datosDeAlumno(alumnoId) {
   };
 }
 
+// Esquema 'parciales' (Origen de las Cocinas, Expresión Oral y Escrita) —
+// mismo patrón que usa admin.js de cada una de esas materias.
+async function datosDeAlumnoParciales(alumnoId) {
+  const base = ['grupos', grupoActivo, 'alumnos', alumnoId];
+  const [tarSnap, partSnap, asisSnap, unifP1, unifP2, exaP1, exaP2, exaFinal, practicoP2, proyE1, proyE2, proyEF] = await Promise.all([
+    getDocs(collection(db(), ...base, 'tareas')).catch(() => null),
+    getDocs(collection(db(), ...base, 'participaciones')).catch(() => null),
+    getDocs(collection(db(), ...base, 'asistencias')).catch(() => null),
+    getDoc(doc(db(), ...base, 'uniformes', 'p1')).catch(() => null),
+    getDoc(doc(db(), ...base, 'uniformes', 'p2')).catch(() => null),
+    getDoc(doc(db(), ...base, 'examenes', 'p1')).catch(() => null),
+    getDoc(doc(db(), ...base, 'examenes', 'p2')).catch(() => null),
+    getDoc(doc(db(), ...base, 'examenes', 'final')).catch(() => null),
+    getDoc(doc(db(), ...base, 'practico', 'p2')).catch(() => null),
+    getDoc(doc(db(), ...base, 'proyecto', 'entrega1')).catch(() => null),
+    getDoc(doc(db(), ...base, 'proyecto', 'entrega2')).catch(() => null),
+    getDoc(doc(db(), ...base, 'proyecto', 'entregaFinal')).catch(() => null),
+  ]);
+
+  return {
+    tareas: tarSnap ? tarSnap.docs.map(d => d.data()) : [],
+    participaciones: partSnap ? partSnap.docs.map(d => d.data()) : [],
+    asistencias: asisSnap ? asisSnap.docs.map(d => d.data()) : [],
+    uniformes: { p1: unifP1 && unifP1.exists() ? unifP1.data() : null, p2: unifP2 && unifP2.exists() ? unifP2.data() : null },
+    examenes: { p1: exaP1 && exaP1.exists() ? exaP1.data() : null, p2: exaP2 && exaP2.exists() ? exaP2.data() : null, final: exaFinal && exaFinal.exists() ? exaFinal.data() : null },
+    practico: { p2: practicoP2 && practicoP2.exists() ? practicoP2.data() : null },
+    proyecto: { entrega1: proyE1 && proyE1.exists() ? proyE1.data() : null, entrega2: proyE2 && proyE2.exists() ? proyE2.data() : null, entregaFinal: proyEF && proyEF.exists() ? proyEF.data() : null },
+  };
+}
+
 let datosAlumnoActual = null;
-let bloquesAlumnoActual = null;
+let bloquesAlumnoActual = null;      // solo esquema 'bloques'
+let resultadosAlumnoActual = null;   // solo esquema 'parciales' — { p1, p2, final }
+let totalCuatrimestreActual = null;  // solo esquema 'parciales'
 
 async function mostrarAlumno(alumnoId) {
   const panel = document.getElementById('alumno-panel');
@@ -206,9 +294,26 @@ async function mostrarAlumno(alumnoId) {
   resumen.innerHTML = '<p class="empty-inline">Cargando…</p>';
   panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  datosAlumnoActual = await datosDeAlumno(alumnoId);
-  bloquesAlumnoActual = [1, 2, 3].map(b => calcularBloque(b, datosAlumnoActual));
+  if (esquemaActivo() === 'parciales') {
+    datosAlumnoActual = await datosDeAlumnoParciales(alumnoId);
+    resultadosAlumnoActual = {
+      p1: calcularParcial('p1', datosAlumnoActual),
+      p2: calcularParcial('p2', datosAlumnoActual),
+      final: calcularParcial('final', datosAlumnoActual),
+    };
+    totalCuatrimestreActual = calcularCuatrimestre(resultadosAlumnoActual);
+    bloquesAlumnoActual = null;
+    renderResumenParciales(resumen);
+  } else {
+    datosAlumnoActual = await datosDeAlumnoBloques(alumnoId);
+    bloquesAlumnoActual = [1, 2, 3].map(b => calcularBloque(b, datosAlumnoActual));
+    resultadosAlumnoActual = null;
+    totalCuatrimestreActual = null;
+    renderResumenBloques(resumen);
+  }
+}
 
+function renderResumenBloques(resumen) {
   const fila = (etiqueta, r, extra) => `
     <div class="res-row">
       <span>${etiqueta}${extra ? ` <small class="res-extra">${extra}</small>` : ''}${r.manual ? ' <small class="res-extra">· ajuste manual</small>' : ''}</span>
@@ -236,6 +341,43 @@ async function mostrarAlumno(alumnoId) {
   `;
 }
 
+function renderResumenParciales(resumen) {
+  const fila = (etiqueta, pts, tope) => `<div class="res-row"><span>${etiqueta}</span><strong>${pts.toFixed(1)} / ${tope}</strong></div>`;
+
+  const NOMBRES = { p1: 'Parcial 1', p2: 'Parcial 2', final: 'Examen Final' };
+  const bloquesHTML = ['p1', 'p2', 'final'].map(p => {
+    const r = resultadosAlumnoActual[p];
+    let cuerpo;
+    if (p === 'final') {
+      cuerpo = fila('Examen', r.examen.pts, r.examen.tope) +
+        fila('Proyecto', r.proyecto.pts, r.proyecto.tope) +
+        fila('Tareas y Participación', r.tareasParticipacion.pts, r.tareasParticipacion.tope) +
+        fila('Asistencia', r.asistencia.pts, r.asistencia.tope);
+    } else if (p === 'p2') {
+      cuerpo = fila('Examen escrito', r.examenEscrito.pts, r.examenEscrito.tope) +
+        fila('Examen práctico', r.practico.pts, r.practico.tope) +
+        fila('Tareas', r.tareas.pts, r.tareas.tope) +
+        fila(`Participación (${r.participacion.cantidad}/${r.participacion.meta})`, r.participacion.pts, r.participacion.tope) +
+        fila('Asistencia', r.asistencia.pts, r.asistencia.tope) +
+        fila('Uniformes', r.uniformes.pts, r.uniformes.tope);
+    } else {
+      cuerpo = fila('Examen', r.examen.pts, r.examen.tope) +
+        fila('Tareas', r.tareas.pts, r.tareas.tope) +
+        fila(`Participación (${r.participacion.cantidad}/${r.participacion.meta})`, r.participacion.pts, r.participacion.tope) +
+        fila('Asistencia', r.asistencia.pts, r.asistencia.tope) +
+        fila('Uniformes', r.uniformes.pts, r.uniformes.tope);
+    }
+    return `<div class="res-card"><h4>${NOMBRES[p]}</h4>${cuerpo}
+      <div class="res-row res-total"><span>Total</span><strong>${r.total.toFixed(1)} / 100 pts</strong></div>
+    </div>`;
+  }).join('');
+
+  resumen.innerHTML = `${bloquesHTML}
+    <div class="score-display">
+      Calificación final del cuatrimestre: ${(totalCuatrimestreActual / 10).toFixed(1)} / 10
+    </div>`;
+}
+
 // ---------- DESCARGAS ----------
 function mostrarMsgDescarga(texto, esError) {
   const msg = document.getElementById('descarga-msg');
@@ -246,10 +388,13 @@ function mostrarMsgDescarga(texto, esError) {
   setTimeout(() => { msg.hidden = true; }, esError ? 6000 : 3000);
 }
 
-async function cargarBancoExamen(bloque) {
-  const clave = `${materiaActiva}-${bloque}`;
+async function cargarBancoExamen(claveBloqueOParcial) {
+  const clave = `${materiaActiva}-${claveBloqueOParcial}`;
   if (bancosExamenCache[clave]) return bancosExamenCache[clave];
-  const url = `${sitioDe(materiaActiva)}data/examen_bloque${bloque}.json`;
+  const nombreArchivo = esquemaActivo() === 'parciales'
+    ? `examen_${claveBloqueOParcial}.json`
+    : `examen_bloque${claveBloqueOParcial}.json`;
+  const url = `${sitioDe(materiaActiva)}data/${nombreArchivo}`;
   const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error(`No se encontró el banco de reactivos (HTTP ${res.status})`);
   const banco = await res.json();
@@ -260,14 +405,18 @@ async function cargarBancoExamen(bloque) {
 on('btn-descargar-examen', 'click', async () => {
   const alumno = alumnoActual();
   if (!alumno) return;
-  const bloque = document.getElementById('descarga-bloque').value;
+  const clave = document.getElementById('descarga-bloque').value;
   try {
     const [snap, banco] = await Promise.all([
-      getDoc(doc(db(), 'grupos', grupoActivo, 'alumnos', alumno.id, 'intentos', String(bloque))),
-      cargarBancoExamen(bloque),
+      getDoc(doc(db(), 'grupos', grupoActivo, 'alumnos', alumno.id, 'intentos', String(clave))),
+      cargarBancoExamen(clave),
     ]);
     const intento = snap.exists() ? snap.data() : null;
-    await reporteExamenAlumno({ nombreGrupo: nombreDelGrupo(), alumno, bloque, intento, banco });
+    if (esquemaActivo() === 'parciales') {
+      await reporteExamenParcial({ nombreGrupo: nombreDelGrupo(), alumno, asignatura: asignaturaDe(materiaActiva), parcial: clave, intento, banco });
+    } else {
+      await reporteExamenAlumno({ nombreGrupo: nombreDelGrupo(), alumno, bloque: clave, intento, banco });
+    }
   } catch (err) {
     console.error(err);
     mostrarMsgDescarga('No se pudo generar el examen: ' + (err.message || err), true);
@@ -276,8 +425,26 @@ on('btn-descargar-examen', 'click', async () => {
 
 on('btn-descargar-asistencia', 'click', async () => {
   const alumno = alumnoActual();
-  if (!alumno || !bloquesAlumnoActual) return;
-  const bloque = parseInt(document.getElementById('descarga-bloque').value, 10);
+  if (!alumno) return;
+  const clave = document.getElementById('descarga-bloque').value;
+
+  if (esquemaActivo() === 'parciales') {
+    if (!resultadosAlumnoActual) return;
+    const r = resultadosAlumnoActual[clave];
+    const dias = (datosAlumnoActual.asistencias || [])
+      .filter(a => a.parcial === clave)
+      .sort((a, b) => (a.fecha || '').localeCompare(b.fecha || ''));
+    try {
+      await reporteAsistenciaParcial({ nombreGrupo: nombreDelGrupo(), alumno, asignatura: asignaturaDe(materiaActiva), parcial: clave, r, diasOrdenados: dias });
+    } catch (err) {
+      console.error(err);
+      mostrarMsgDescarga('No se pudo generar la asistencia: ' + (err.message || err), true);
+    }
+    return;
+  }
+
+  if (!bloquesAlumnoActual) return;
+  const bloque = parseInt(clave, 10);
   const r = bloquesAlumnoActual.find(x => x.bloque === bloque);
   const diasOrdenados = (datosAlumnoActual.asistencias || [])
     .filter(a => Number(a.bloque) === bloque)
@@ -292,9 +459,15 @@ on('btn-descargar-asistencia', 'click', async () => {
 
 on('btn-descargar-participacion', 'click', async () => {
   const alumno = alumnoActual();
-  if (!alumno || !bloquesAlumnoActual) return;
+  if (!alumno) return;
   try {
-    await reporteParticipacionAlumno({ nombreGrupo: nombreDelGrupo(), alumno, bloques: bloquesAlumnoActual });
+    if (esquemaActivo() === 'parciales') {
+      if (!resultadosAlumnoActual) return;
+      await reporteTareasYParticipacionAlumno({ nombreGrupo: nombreDelGrupo(), alumno, asignatura: asignaturaDe(materiaActiva), resultados: resultadosAlumnoActual });
+    } else {
+      if (!bloquesAlumnoActual) return;
+      await reporteParticipacionAlumno({ nombreGrupo: nombreDelGrupo(), alumno, bloques: bloquesAlumnoActual });
+    }
   } catch (err) {
     console.error(err);
     mostrarMsgDescarga('No se pudo generar el reporte: ' + (err.message || err), true);
@@ -302,6 +475,9 @@ on('btn-descargar-participacion', 'click', async () => {
 });
 
 on('btn-descargar-practicas', 'click', async () => {
+  // No aplica en esquema 'parciales' — el botón se oculta en
+  // ajustarUIPorEsquema(), esto es solo un resguardo adicional.
+  if (esquemaActivo() === 'parciales') return;
   const alumno = alumnoActual();
   if (!alumno || !bloquesAlumnoActual) return;
   try {
@@ -314,9 +490,15 @@ on('btn-descargar-practicas', 'click', async () => {
 
 on('btn-descargar-concentrado', 'click', async () => {
   const alumno = alumnoActual();
-  if (!alumno || !datosAlumnoActual) return;
+  if (!alumno) return;
   try {
-    await reporteConcentradoAlumno({ nombreGrupo: nombreDelGrupo(), alumno, datos: datosAlumnoActual });
+    if (esquemaActivo() === 'parciales') {
+      if (!resultadosAlumnoActual) return;
+      await reporteConcentradoParcial({ nombreGrupo: nombreDelGrupo(), alumno, asignatura: asignaturaDe(materiaActiva), resultados: resultadosAlumnoActual, totalCuatrimestre: totalCuatrimestreActual });
+    } else {
+      if (!datosAlumnoActual) return;
+      await reporteConcentradoAlumno({ nombreGrupo: nombreDelGrupo(), alumno, datos: datosAlumnoActual });
+    }
   } catch (err) {
     console.error(err);
     mostrarMsgDescarga('No se pudo generar el concentrado: ' + (err.message || err), true);
