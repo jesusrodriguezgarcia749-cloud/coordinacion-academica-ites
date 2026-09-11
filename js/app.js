@@ -181,7 +181,7 @@ function ajustarUIPorEsquema() {
 // ---------- GRUPO ----------
 async function cargarGrupos() {
   const select = document.getElementById('grupo-select');
-  select.innerHTML = '<option value="">— Elige un grupo —</option>';
+  select.innerHTML = '<option value="">Selecciona…</option>';
   if (!materiaActiva) return;
   const snap = await getDocs(query(collection(db(), 'grupos'), orderBy('nombre')));
   snap.forEach(d => {
@@ -217,7 +217,7 @@ async function cargarAlumnos() {
 
 function poblarSelectAlumnos(lista) {
   const select = document.getElementById('alumno-select');
-  select.innerHTML = '<option value="">— Elige un alumno —</option>';
+  select.innerHTML = '<option value="">Selecciona…</option>';
   lista.forEach(a => {
     const opt = document.createElement('option');
     opt.value = a.id;
