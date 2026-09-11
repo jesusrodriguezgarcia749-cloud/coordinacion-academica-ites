@@ -3,9 +3,14 @@
 // Esta app NO tiene su propio proyecto de Firebase: se conecta a los
 // proyectos que cada materia ya usa (Coordinación solo LEE, nunca escribe).
 //
+// "carrera" agrupa las materias por licenciatura en la interfaz — el
+// selector superior muestra carreras, y al elegir una se listan solo las
+// materias de esa carrera. Por ahora Artes Culinarias tiene 2 (Bases
+// Culinarias y Origen de las Cocinas) y Ciencias de la Comunicación
+// tendrá 1 (Expresión Oral y Escrita, pendiente de agregar).
+//
 // "esquema" indica qué fórmula de calificación usa esa materia:
-//   'bloques'   → Bases Culinarias (3 Bloques de 100 pts: Participación,
-//                 Ensayos, Prácticas, Asistencia, Examen) — calculo.js
+//   'bloques'   → Bases Culinarias (3 Bloques de 100 pts) — calculo.js
 //   'parciales' → Origen de las Cocinas / Expresión Oral y Escrita
 //                 (Parcial 1, Parcial 2, Examen Final) — calculo-parciales.js
 // app.js usa este campo para decidir qué lógica de cálculo y qué reportes
@@ -27,6 +32,7 @@ export const MATERIAS = [
   {
     id: 'bases-culinarias',
     nombre: 'Bases Culinarias',
+    carrera: 'Artes Culinarias y Negocios Gastronómicos',
     asignatura: 'Bases Culinarias · Clave 0101 · Primer cuatrimestre',
     esquema: 'bloques',
     sitioUrl: 'https://jesusrodriguezgarcia749-cloud.github.io/bases-culinarias/',
@@ -42,6 +48,7 @@ export const MATERIAS = [
   {
     id: 'origen-de-las-cocinas',
     nombre: 'Origen de las Cocinas',
+    carrera: 'Artes Culinarias y Negocios Gastronómicos',
     asignatura: 'Origen de las Cocinas · Clave 0102 · Primer cuatrimestre',
     esquema: 'parciales',
     sitioUrl: 'https://jesusrodriguezgarcia749-cloud.github.io/origen-de-las-cocinas/',
@@ -58,12 +65,20 @@ export const MATERIAS = [
   // {
   //   id: 'expresion-oral-escrita',
   //   nombre: 'Expresión Oral y Escrita',
+  //   carrera: 'Ciencias de la Comunicación',
   //   asignatura: 'Expresión Oral y Escrita · Primer cuatrimestre',
   //   esquema: 'parciales',
   //   sitioUrl: 'https://jesusrodriguezgarcia749-cloud.github.io/expresion-oral-escrita/',
   //   firebaseConfig: { ... },
   // },
 ];
+
+// Lista de carreras únicas, en el orden en que aparecen sus materias arriba.
+export const CARRERAS = [...new Set(MATERIAS.map(m => m.carrera))];
+
+export function materiasDeCarrera(carrera) {
+  return MATERIAS.filter(m => m.carrera === carrera);
+}
 
 // El usuario de Coordinación vive en el proyecto de Firebase de esta
 // materia — el login SIEMPRE se hace contra ella, sin importar qué materia
