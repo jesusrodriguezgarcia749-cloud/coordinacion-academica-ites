@@ -61,16 +61,22 @@ export const MATERIAS = [
       appId: "1:951291486308:web:eb133e2500ffe60b43ff71"
     },
   },
-  // Próximamente:
-  // {
-  //   id: 'expresion-oral-escrita',
-  //   nombre: 'Expresión Oral y Escrita',
-  //   carrera: 'Ciencias de la Comunicación',
-  //   asignatura: 'Expresión Oral y Escrita · Primer cuatrimestre',
-  //   esquema: 'parciales',
-  //   sitioUrl: 'https://jesusrodriguezgarcia749-cloud.github.io/expresion-oral-escrita/',
-  //   firebaseConfig: { ... },
-  // },
+  {
+    id: 'expresion-oral-escrita',
+    nombre: 'Expresión Oral y Escrita',
+    carrera: 'Ciencias de la Comunicación',
+    asignatura: 'Expresión Oral y Escrita · Primer cuatrimestre',
+    esquema: 'parciales',
+    sitioUrl: 'https://jesusrodriguezgarcia749-cloud.github.io/expresion-oral-escrita/',
+    firebaseConfig: {
+      apiKey: "AIzaSyCv-1oXD5F0s33vHtXSPPL7G18Mk8L_Lc0",
+      authDomain: "expresion-oral-escrita.firebaseapp.com",
+      projectId: "expresion-oral-escrita",
+      storageBucket: "expresion-oral-escrita.firebasestorage.app",
+      messagingSenderId: "10241749923",
+      appId: "1:10241749923:web:5ccdba588d4c0ea8b5a016"
+    },
+  },
 ];
 
 // Lista de carreras únicas, en el orden en que aparecen sus materias arriba.
