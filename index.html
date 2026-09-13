@@ -4,95 +4,118 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Coordinación Académica — ITES René Descartes</title>
+<meta name="description" content="Panel de consulta de Coordinación Académica del ITES René Descartes. Acceso restringido.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css">
-<link rel="stylesheet" href="css/admin.css">
-<link rel="stylesheet" href="css/progreso.css">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700&family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/coordinacion.css">
 </head>
 <body>
 
 <header class="site-header">
   <div class="wrap header-inner">
-    <a class="brand" href="index.html" style="display:flex; align-items:center; gap:10px;">
-      <img src="assets/escudo.png" alt="Escudo ITES René Descartes" style="width:34px; height:34px; object-fit:contain; flex-shrink:0;" onerror="this.style.display='none'">
-      <span class="brand-mark">CA</span>
-      <span class="brand-text">Coordinación Académica</span>
-    </a>
+    <img src="assets/escudo.png" alt="" class="escudo" onerror="this.style.display='none'">
+    <span class="brand-mark">CA</span>
+    <span class="brand-text">Coordinación Académica</span>
   </div>
 </header>
 
-<section id="login-screen" class="admin-wrap">
+<!-- ===================== LOGIN ===================== -->
+<section id="login-screen" class="login-wrap">
   <div class="login-card">
-    <img src="assets/escudo.png" alt="Escudo ITES René Descartes" style="width:64px; height:64px; object-fit:contain; display:block; margin:0 auto 14px;" onerror="this.style.display='none'">
+    <img src="assets/escudo.png" alt="Escudo ITES René Descartes" class="escudo-grande" onerror="this.style.display='none'">
     <h1>Coordinación Académica</h1>
     <p class="login-sub">Acceso restringido — solo cuenta institucional.</p>
     <form id="login-form">
       <label for="login-email" class="sr-only">Correo</label>
-      <input id="login-email" type="email" placeholder="tu-correo@itesrenedescartes.edu.mx" required autocomplete="email">
+      <input id="login-email" class="campo" type="email" placeholder="Correo institucional" required autocomplete="email">
       <label for="login-pass" class="sr-only">Contraseña</label>
-      <input id="login-pass" type="password" placeholder="Contraseña" required autocomplete="current-password">
-      <button type="submit" class="btn btn-primary">Entrar</button>
+      <input id="login-pass" class="campo" type="password" placeholder="Contraseña" required autocomplete="current-password">
+      <button type="submit" class="btn btn-primary btn-block">Entrar</button>
       <p id="login-error" class="login-error" hidden></p>
     </form>
   </div>
 </section>
 
-<section id="app-screen" class="admin-wrap" hidden>
+<!-- ===================== APP ===================== -->
+<main id="app-screen" class="main" hidden>
+  <div class="wrap">
 
-  <div class="admin-topbar">
-    <span style="font-family:'Fraunces',serif; font-weight:600; font-size:1.1rem;">Coordinación Académica</span>
-    <button id="btn-logout" class="btn-logout">Salir</button>
-  </div>
-
-  <div class="bloques-activos-card">
-    <h3 class="section-title" style="margin-top:0;">Selecciona</h3>
-
-    <label for="carrera-select" class="field-label">Carrera</label>
-    <select id="carrera-select"></select>
-
-    <label for="materia-select" class="field-label">Materia</label>
-    <select id="materia-select"></select>
-
-    <label for="grupo-select" class="field-label">Grupo</label>
-    <select id="grupo-select"><option value="">Selecciona…</option></select>
-
-    <label for="alumno-select" class="field-label">Alumno</label>
-    <select id="alumno-select"><option value="">Selecciona…</option></select>
-    <p id="alumno-empty" class="empty-state" hidden>Elige un grupo primero.</p>
-  </div>
-
-  <div id="alumno-panel" hidden>
-
-    <div class="bloques-activos-card">
-      <h3 class="section-title" style="margin-top:0;">Descargas para revisión</h3>
-      <p class="field-hint">Elige qué quieres descargar de este alumno. El examen y la asistencia se descargan por bloque.</p>
-
-      <label for="descarga-bloque" class="field-label">Bloque (para examen y asistencia)</label>
-      <select id="descarga-bloque">
-        <option value="1">Bloque 1</option>
-        <option value="2">Bloque 2</option>
-        <option value="3">Bloque 3</option>
-      </select>
-
-      <div class="reporte-botones" style="flex-wrap:wrap;">
-        <button id="btn-descargar-examen" class="btn btn-ghost-dark">Examen resuelto (PDF)</button>
-        <button id="btn-descargar-asistencia" class="btn btn-ghost-dark">Asistencia (PDF)</button>
-        <button id="btn-descargar-participacion" class="btn btn-ghost-dark">Participación (PDF)</button>
-        <button id="btn-descargar-practicas" class="btn btn-ghost-dark">Prácticas de cocina (PDF)</button>
-      </div>
-      <div class="reporte-botones" style="margin-top:10px;">
-        <button id="btn-descargar-concentrado" class="btn btn-primary">Descargar concentrado (PDF)</button>
-      </div>
-      <p id="descarga-msg" class="save-msg" hidden></p>
+    <div class="topbar">
+      <span class="topbar-titulo">Consulta de alumnos</span>
+      <button id="btn-logout" class="btn-salir">Salir</button>
     </div>
 
-    <h3 class="section-title">Resumen del alumno</h3>
-    <div id="alumno-resumen"></div>
-  </div>
+    <!-- Selectores -->
+    <section class="card">
+      <h2 class="card-titulo">Selecciona</h2>
 
-</section>
+      <label for="carrera-select" class="field-label">Carrera</label>
+      <select id="carrera-select" class="campo"></select>
+
+      <label for="materia-select" class="field-label">Materia</label>
+      <select id="materia-select" class="campo"></select>
+
+      <label for="alumno-select" class="field-label">Alumno</label>
+      <select id="alumno-select" class="campo"><option value="">Selecciona…</option></select>
+
+      <p id="alumno-empty" class="empty-inline" hidden>Esta materia todavía no tiene alumnos registrados.</p>
+
+      <!-- El grupo no se elige a mano: cada materia tiene uno solo y app.js
+           lo selecciona automáticamente. Se conserva oculto por si alguna
+           materia llega a tener más de un grupo en el futuro. -->
+      <select id="grupo-select" hidden></select>
+    </section>
+
+    <!-- Panel del alumno -->
+    <div id="alumno-panel" hidden>
+
+      <section class="card">
+        <h2 class="card-titulo">Descargas para revisión</h2>
+        <p class="hint">Cada descarga abre una ventana lista para imprimir o guardar como PDF.</p>
+
+        <label for="descarga-periodo" class="field-label">Periodo (para examen y asistencia)</label>
+        <select id="descarga-periodo" class="campo"></select>
+
+        <div class="descargas-grid">
+          <button type="button" class="descarga-card" id="btn-descargar-examen">
+            <span class="descarga-card-titulo">Examen resuelto</span>
+            <span class="descarga-card-sub">Respuestas del alumno, con la correcta y su explicación</span>
+          </button>
+
+          <button type="button" class="descarga-card" id="btn-descargar-asistencia">
+            <span class="descarga-card-titulo">Asistencia</span>
+            <span class="descarga-card-sub">Calendario del periodo con faltas y retardos</span>
+          </button>
+
+          <button type="button" class="descarga-card" id="btn-descargar-participacion">
+            <span class="descarga-card-titulo" id="txt-participacion">Participación</span>
+            <span class="descarga-card-sub">Actividades registradas y puntos obtenidos</span>
+          </button>
+
+          <button type="button" class="descarga-card" id="btn-descargar-practicas">
+            <span class="descarga-card-titulo">Prácticas de cocina</span>
+            <span class="descarga-card-sub">Rúbrica y calificación de cada práctica</span>
+          </button>
+
+          <button type="button" class="descarga-card descarga-card-destacada" id="btn-descargar-concentrado">
+            <span class="descarga-card-titulo">Concentrado general</span>
+            <span class="descarga-card-sub">Todo el cuatrimestre en un solo documento</span>
+          </button>
+        </div>
+
+        <p id="descarga-msg" class="msg" hidden></p>
+      </section>
+
+      <section class="card">
+        <h2 class="card-titulo">Resumen del alumno</h2>
+        <div id="alumno-resumen"></div>
+      </section>
+
+    </div>
+
+  </div>
+</main>
 
 <footer class="site-footer">
   <div class="wrap">
