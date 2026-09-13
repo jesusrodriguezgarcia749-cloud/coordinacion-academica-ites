@@ -407,7 +407,7 @@ export async function reporteConcentradoParcial({ nombreGrupo, alumno, asignatur
       // Parcial 2 con examen dividido (solo Origen de las Cocinas).
       return `<tr>
         <td class="alumno">${NOMBRES_PARCIAL[p]}</td>
-        <td class="num">${r.examenEscrito.pts.toFixed(1)}/20 + ${r.practico.pts.toFixed(1)}/20</td>
+        <td class="num">${r.examenEscrito.pts.toFixed(1)}/20 escrito<br>${r.practico.pts.toFixed(1)}/20 práctico</td>
         <td class="num">—</td>
         <td class="num">${r.tareas.pts.toFixed(1)}/25</td>
         <td class="num">${r.participacion.pts.toFixed(1)}/25</td>
@@ -462,6 +462,12 @@ export async function reporteConcentradoParcial({ nombreGrupo, alumno, asignatur
         <td class="num" colspan="2">${(totalCuatrimestre / 10).toFixed(1)} / 10</td></tr>
       </tbody>
     </table>
+    ${resultados.p2.examenEscrito ? `<p style="font-size:.7rem; color:#5C544A; margin:10px 0 0; line-height:1.55;">
+      <strong>Nota sobre el examen práctico:</strong> el examen práctico del Parcial 2
+      corresponde a la práctica de cocina evaluada con rúbrica. Las prácticas mensuales
+      restantes de la asignatura se realizan con fines formativos y no forman parte de
+      la calificación numérica.
+    </p>` : ''}
     <h2>Proyecto "Mi Plato, Mi Historia" — detalle por entrega</h2>
     <table>
       <thead><tr><th>Entrega</th><th class="num">Calificación</th><th class="num">Puntos</th></tr></thead>
