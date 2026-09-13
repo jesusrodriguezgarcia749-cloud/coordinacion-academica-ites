@@ -174,7 +174,10 @@ function ajustarPorEsquema() {
     txtParticipacion.textContent = 'Tareas y Participación';
     // Estas materias no llevan un catálogo de prácticas aparte (el examen
     // práctico del Parcial 2 ya aparece dentro de ese parcial).
-    btnPracticas.hidden = true;
+    // Se usa display:none y no el atributo "hidden" porque la regla
+    // .descarga-card{display:flex} del CSS tiene prioridad sobre "hidden"
+    // y dejaba el botón visible aunque estuviera desactivado.
+    btnPracticas.style.display = 'none';
   } else {
     labelPeriodo.textContent = 'Bloque (para examen y asistencia)';
     periodo.innerHTML = `
@@ -182,7 +185,7 @@ function ajustarPorEsquema() {
       <option value="2">Bloque 2</option>
       <option value="3">Bloque 3</option>`;
     txtParticipacion.textContent = 'Participación';
-    btnPracticas.hidden = false;
+    btnPracticas.style.display = '';
   }
 }
 
@@ -378,7 +381,7 @@ function htmlResumenParciales() {
     } else if (p === 'p2' && r.examenEscrito) {
       // Parcial 2 con examen dividido (solo Origen de las Cocinas).
       cuerpo = fila('Examen escrito', r.examenEscrito.pts, r.examenEscrito.tope)
-        + fila('Examen práctico', r.practico.pts, r.practico.tope)
+        + fila('Examen práctico', r.practico.pts, r.practico.tope, 'práctica de cocina')
         + fila('Tareas', r.tareas.pts, r.tareas.tope)
         + fila('Participación', r.participacion.pts, r.participacion.tope, `${r.participacion.cantidad}/${r.participacion.meta}`)
         + fila('Asistencia', r.asistencia.pts, r.asistencia.tope)
