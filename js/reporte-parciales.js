@@ -403,7 +403,8 @@ export async function reporteConcentradoParcial({ nombreGrupo, alumno, asignatur
         <td class="num">${badge(r.total / 10)}</td>
       </tr>`;
     }
-    if (p === 'p2') {
+    if (p === 'p2' && r.examenEscrito) {
+      // Parcial 2 con examen dividido (solo Origen de las Cocinas).
       return `<tr>
         <td class="alumno">${NOMBRES_PARCIAL[p]}</td>
         <td class="num">${r.examenEscrito.pts.toFixed(1)}/20 + ${r.practico.pts.toFixed(1)}/20</td>
@@ -417,7 +418,7 @@ export async function reporteConcentradoParcial({ nombreGrupo, alumno, asignatur
     }
     return `<tr>
       <td class="alumno">${NOMBRES_PARCIAL[p]}</td>
-      <td class="num">${r.examen.pts.toFixed(1)}/40</td>
+      <td class="num">${r.examen.pts.toFixed(1)}/${r.examen.tope}</td>
       <td class="num">—</td>
       <td class="num">${r.tareas.pts.toFixed(1)}/25</td>
       <td class="num">${r.participacion.pts.toFixed(1)}/25</td>
