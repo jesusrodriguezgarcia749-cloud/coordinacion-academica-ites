@@ -10,9 +10,13 @@
 // tendrá 1 (Expresión Oral y Escrita, pendiente de agregar).
 //
 // "esquema" indica qué fórmula de calificación usa esa materia:
-//   'bloques'   → Bases Culinarias (3 Bloques de 100 pts) — calculo.js
-//   'parciales' → Origen de las Cocinas / Expresión Oral y Escrita
-//                 (Parcial 1, Parcial 2, Examen Final) — calculo-parciales.js
+//   'bloques'          → Bases Culinarias (3 Bloques de 100 pts) — calculo.js
+//   'parciales'        → Origen de las Cocinas — calculo-parciales.js
+//                        (su Parcial 2 divide el examen en escrito 20 +
+//                        práctico 20, y lleva el rubro Uniformes)
+//   'parciales-simple' → Expresión Oral y Escrita — calculo-parciales.js
+//                        (Parcial 2 igual al Parcial 1: un solo examen de 40,
+//                        sin examen práctico)
 // app.js usa este campo para decidir qué lógica de cálculo y qué reportes
 // aplicar a cada materia, en vez de asumir que todas son iguales.
 //
@@ -66,7 +70,7 @@ export const MATERIAS = [
     nombre: 'Expresión Oral y Escrita',
     carrera: 'Ciencias de la Comunicación',
     asignatura: 'Expresión Oral y Escrita · Primer cuatrimestre',
-    esquema: 'parciales',
+    esquema: 'parciales-simple',
     sitioUrl: 'https://jesusrodriguezgarcia749-cloud.github.io/expresion-oral-escrita/',
     firebaseConfig: {
       apiKey: "AIzaSyCv-1oXD5F0s33vHtXSPPL7G18Mk8L_Lc0",
