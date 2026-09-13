@@ -208,7 +208,18 @@ async function cargarGrupoYAlumnos() {
   grupoActivo = primero.id;
   $('grupo-select').innerHTML = `<option value="${primero.id}">${primero.data().nombre || ''}</option>`;
 
-  const alumnosSnap = await getDocs(query(collection(db(), 'grupos', grupoActivo, 'alumnos'), orderBy('nombre')));
+  let alumnosSnap;
+  try {
+    alumnosSnap = await getDocs(query(collection(db(), 'grupos', grupoActivo, 'alumnos'), orderBy('nombre')));
+  } catch (err) {
+    // Sin este aviso, un fallo de permisos dejaba el selector vacío y sin
+    // ninguna pista de qué había pasado.
+    console.error('No se pudieron leer los alumnos:', err);
+    vacio.textContent = `No se pudo leer la lista de alumnos (${err.code || err.message}).`;
+    vacio.hidden = false;
+    return;
+  }
+
   alumnosCache = alumnosSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
   alumnosCache.forEach(a => {
