@@ -1,14 +1,24 @@
 // calculo-parciales.js — Fórmula de calificación para materias con esquema
-// de PARCIALES (Origen de las Cocinas, Expresión Oral y Escrita), separada
-// por completo de calculo.js (que es solo para Bases Culinarias, esquema de
-// Bloques). Mismo criterio que usa cada docente en su propio panel admin.js.
+// de PARCIALES, separada por completo de calculo.js (que es solo para Bases
+// Culinarias, esquema de Bloques). Mismo criterio que usa cada docente en su
+// propio panel admin.js.
 //
-//   Parcial 1: Examen 40% + Tareas 25% + Participación 25% + Asistencia 5%
-//              + Uniformes 5%
-//   Parcial 2: Examen escrito 20% + Examen práctico 20% + Tareas 25%
-//              + Participación 25% + Asistencia 5% + Uniformes 5%
-//   Examen Final: Examen 40% + Proyecto 40% (3 entregas) + Tareas y
-//              Participación 15% + Asistencia 5%
+// Hay DOS variantes del esquema de parciales, según la materia:
+//
+//   'parciales' (Origen de las Cocinas)
+//     Parcial 1: Examen 40 + Tareas 25 + Participación 25 + Asistencia 5
+//                + Uniformes 5
+//     Parcial 2: Examen ESCRITO 20 + Examen PRÁCTICO 20 + Tareas 25
+//                + Participación 25 + Asistencia 5 + Uniformes 5
+//
+//   'parciales-simple' (Expresión Oral y Escrita)
+//     Parcial 1 y Parcial 2 son IGUALES: Examen 40 + Tareas 25
+//                + Participación 25 + Asistencia 5 + Uniformes 5
+//     No hay examen práctico: esa materia no lleva prácticas de cocina.
+//
+// El Examen Final es idéntico en ambas variantes:
+//   Examen 40 + Proyecto 40 (entregas de 15 + 15 + 10) + Tareas y
+//   Participación 15 + Asistencia 5
 //   Cuatrimestre: Parcial 1 (25%) + Parcial 2 (25%) + Final (50%)
 
 export const TOPES = {
@@ -16,6 +26,9 @@ export const TOPES = {
   p2:    { examenEscrito: 20, practico: 20, tareas: 25, participacion: 25, asistencia: 5, uniformes: 5 },
   final: { examen: 40, proyecto: 40, tareasParticipacion: 15, asistencia: 5 },
 };
+
+// Parcial 2 de la variante 'parciales-simple': idéntico al Parcial 1.
+export const TOPES_P2_SIMPLE = { examen: 40, tareas: 25, participacion: 25, asistencia: 5, uniformes: 5 };
 
 export const TOPES_PROYECTO = { entrega1: 15, entrega2: 15, entregaFinal: 10 };
 
@@ -86,7 +99,8 @@ function calcularProyecto(datosProyecto) {
 }
 
 // datos = { tareas, participaciones, asistencias, uniformes, examenes, practico, proyecto }
-export function calcularParcial(parcial, datos) {
+// esquema = 'parciales' (por defecto) o 'parciales-simple'
+export function calcularParcial(parcial, datos, esquema = 'parciales') {
   const tareasDelParcial = (datos.tareas || []).filter(t => t.parcial === parcial);
   const participacionDelParcial = (datos.participaciones || []).filter(p => p.parcial === parcial);
   const asistenciaDelParcial = (datos.asistencias || []).filter(a => a.parcial === parcial);
@@ -102,21 +116,25 @@ export function calcularParcial(parcial, datos) {
     return { parcial, total, examen, tareasParticipacion, asistencia, proyecto };
   }
 
-  const tope = TOPES[parcial];
+  // En 'parciales-simple' el Parcial 2 usa los mismos topes que el Parcial 1.
+  const esSimple = esquema === 'parciales-simple';
+  const tope = (parcial === 'p2' && esSimple) ? TOPES_P2_SIMPLE : TOPES[parcial];
+
   const tareas = calcularRubroPromedio(tareasDelParcial, tope.tareas);
   const participacion = calcularParticipacionConteo(participacionDelParcial, META_PARTICIPACION[parcial], tope.participacion);
   const asistencia = calcularAsistencia(asistenciaDelParcial, tope.asistencia);
   const uniformes = calcularUniformes((datos.uniformes || {})[parcial], tope.uniformes);
 
-  if (parcial === 'p2') {
+  // Parcial 2 con examen dividido (escrito + práctico): solo en 'parciales'.
+  if (parcial === 'p2' && !esSimple) {
     const examenEscrito = calcularExamen((datos.examenes || {}).p2, tope.examenEscrito);
     const practico = calcularExamen((datos.practico || {}).p2, tope.practico);
     const total = tareas.pts + participacion.pts + asistencia.pts + uniformes.pts + examenEscrito.pts + practico.pts;
     return { parcial, total, examenEscrito, practico, tareas, participacion, asistencia, uniformes };
   }
 
-  // p1
-  const examen = calcularExamen((datos.examenes || {}).p1, tope.examen);
+  // p1 — y también p2 cuando el esquema es 'parciales-simple'
+  const examen = calcularExamen((datos.examenes || {})[parcial], tope.examen);
   const total = tareas.pts + participacion.pts + asistencia.pts + uniformes.pts + examen.pts;
   return { parcial, total, examen, tareas, participacion, asistencia, uniformes };
 }
