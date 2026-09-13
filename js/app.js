@@ -61,6 +61,13 @@ function on(id, evento, fn) {
 function db() { return dbDe(materiaActiva); }
 function esquema() { return esquemaDe(materiaActiva); }
 
+// Las dos variantes de parciales comparten estructura de datos y reportes;
+// solo cambian los topes del Parcial 2 (ver calculo-parciales.js).
+function esParciales() {
+  const e = esquema();
+  return e === 'parciales' || e === 'parciales-simple';
+}
+
 function mostrarMsg(texto, esError) {
   const msg = $('descarga-msg');
   if (!msg) return;
@@ -152,13 +159,13 @@ on('materia-select', 'change', async (e) => {
 
 // Adapta las etiquetas y opciones que cambian entre un esquema y otro.
 function ajustarPorEsquema() {
-  const esParciales = esquema() === 'parciales';
+  const usaParciales = esParciales();
   const periodo = $('descarga-periodo');
   const labelPeriodo = document.querySelector('label[for="descarga-periodo"]');
   const btnPracticas = $('btn-descargar-practicas');
   const txtParticipacion = $('txt-participacion');
 
-  if (esParciales) {
+  if (usaParciales) {
     labelPeriodo.textContent = 'Parcial (para examen y asistencia)';
     periodo.innerHTML = `
       <option value="p1">Parcial 1</option>
@@ -316,12 +323,13 @@ async function mostrarAlumno(alumnoId) {
   resumen.innerHTML = '<p class="empty-inline">Cargando…</p>';
   panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  if (esquema() === 'parciales') {
+  if (esParciales()) {
     datosAlumno = await datosParciales(alumnoId);
+    const esq = esquema();
     resultadosAlumno = {
-      p1: calcularParcial('p1', datosAlumno),
-      p2: calcularParcial('p2', datosAlumno),
-      final: calcularParcial('final', datosAlumno),
+      p1: calcularParcial('p1', datosAlumno, esq),
+      p2: calcularParcial('p2', datosAlumno, esq),
+      final: calcularParcial('final', datosAlumno, esq),
     };
     totalCuatrimestre = calcularCuatrimestre(resultadosAlumno);
     bloquesAlumno = null;
@@ -367,7 +375,8 @@ function htmlResumenParciales() {
         + fila('Proyecto', r.proyecto.pts, r.proyecto.tope)
         + fila('Tareas y Participación', r.tareasParticipacion.pts, r.tareasParticipacion.tope)
         + fila('Asistencia', r.asistencia.pts, r.asistencia.tope);
-    } else if (p === 'p2') {
+    } else if (p === 'p2' && r.examenEscrito) {
+      // Parcial 2 con examen dividido (solo Origen de las Cocinas).
       cuerpo = fila('Examen escrito', r.examenEscrito.pts, r.examenEscrito.tope)
         + fila('Examen práctico', r.practico.pts, r.practico.tope)
         + fila('Tareas', r.tareas.pts, r.tareas.tope)
@@ -392,7 +401,7 @@ function htmlResumenParciales() {
 async function cargarBanco(periodo) {
   const clave = `${materiaActiva}-${periodo}`;
   if (bancosCache[clave]) return bancosCache[clave];
-  const archivo = esquema() === 'parciales'
+  const archivo = esParciales()
     ? `examen_${periodo}.json`
     : `examen_bloque${periodo}.json`;
   const res = await fetch(`${sitioDe(materiaActiva)}data/${archivo}`, { cache: 'no-store' });
@@ -412,7 +421,7 @@ on('btn-descargar-examen', 'click', async () => {
       cargarBanco(periodo),
     ]);
     const intento = snap.exists() ? snap.data() : null;
-    if (esquema() === 'parciales') {
+    if (esParciales()) {
       await reporteExamenParcial({ nombreGrupo: nombreDelGrupo(), alumno, asignatura: asignaturaDe(materiaActiva), parcial: periodo, intento, banco });
     } else {
       await reporteExamenAlumno({ nombreGrupo: nombreDelGrupo(), alumno, bloque: periodo, intento, banco });
@@ -428,7 +437,7 @@ on('btn-descargar-asistencia', 'click', async () => {
   if (!alumno) return;
   const periodo = $('descarga-periodo').value;
   try {
-    if (esquema() === 'parciales') {
+    if (esParciales()) {
       if (!resultadosAlumno) return;
       const dias = (datosAlumno.asistencias || [])
         .filter(a => a.parcial === periodo)
@@ -456,7 +465,7 @@ on('btn-descargar-participacion', 'click', async () => {
   const alumno = alumnoActual();
   if (!alumno) return;
   try {
-    if (esquema() === 'parciales') {
+    if (esParciales()) {
       if (!resultadosAlumno) return;
       await reporteTareasYParticipacionAlumno({
         nombreGrupo: nombreDelGrupo(), alumno,
@@ -473,7 +482,7 @@ on('btn-descargar-participacion', 'click', async () => {
 });
 
 on('btn-descargar-practicas', 'click', async () => {
-  if (esquema() === 'parciales') return; // el botón está oculto en ese esquema
+  if (esParciales()) return; // el botón está oculto en ambas variantes de parciales
   const alumno = alumnoActual();
   if (!alumno || !bloquesAlumno) return;
   try {
@@ -488,7 +497,7 @@ on('btn-descargar-concentrado', 'click', async () => {
   const alumno = alumnoActual();
   if (!alumno) return;
   try {
-    if (esquema() === 'parciales') {
+    if (esParciales()) {
       if (!resultadosAlumno) return;
       await reporteConcentradoParcial({
         nombreGrupo: nombreDelGrupo(), alumno, asignatura: asignaturaDe(materiaActiva),
