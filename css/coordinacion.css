@@ -1,0 +1,274 @@
+/* ============================================================
+   coordinacion.css — hoja de estilos ÚNICA y propia de la app
+   de Coordinación Académica.
+
+   Esta app ya NO depende de admin.css ni progreso.css (que fueron
+   escritos para el panel docente de Bases Culinarias y traían
+   reglas que aquí sobraban y se peleaban entre sí). Todo lo que
+   necesita Coordinación vive en este archivo.
+
+   Paleta institucional compartida con las plataformas de materia:
+   crema de fondo, navy/charcoal para texto y encabezados, gold
+   (azafrán) como acento.
+   ============================================================ */
+
+:root{
+  --cream:        #F4EFE4;  /* fondo general */
+  --card:         #FBF8F1;  /* fondo de tarjetas */
+  --white:        #FFFFFF;
+  --charcoal:     #231F1A;  /* texto principal / encabezados */
+  --ink-soft:     #5C544A;  /* texto secundario */
+  --line:         #E0D9CB;  /* bordes */
+  --gold:         #C98A2C;  /* acento principal */
+  --gold-dark:    #8A5E12;
+  --sage:         #6B7A5E;  /* aprobado / positivo */
+  --paprika:      #A63D2F;  /* error / reprobado */
+  --radius:       16px;
+  --shadow:       0 2px 12px rgba(0,0,0,0.07);
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body:    'Public Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+*{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--cream);
+  color:var(--charcoal);
+  font-family:var(--font-body);
+  font-size:16px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+
+.sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+}
+
+.wrap{ max-width:720px; margin:0 auto; padding:0 20px; }
+
+/* ---------- Encabezado ---------- */
+.site-header{
+  background:var(--cream);
+  border-bottom:1px solid var(--line);
+  padding:14px 0;
+}
+.header-inner{
+  display:flex; align-items:center; gap:12px;
+}
+.escudo{
+  width:38px; height:38px; object-fit:contain; flex-shrink:0;
+}
+.brand-mark{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:42px; height:42px; flex-shrink:0;
+  background:var(--charcoal); color:var(--gold);
+  border-radius:10px;
+  font-family:var(--font-display); font-weight:700; font-size:1rem;
+}
+.brand-text{
+  font-family:var(--font-display); font-weight:700; font-size:1.15rem;
+  color:var(--charcoal); line-height:1.2;
+}
+
+/* ---------- Contenedor principal ---------- */
+.main{ padding:28px 0 80px; }
+
+/* ---------- Pantalla de login ---------- */
+.login-wrap{
+  display:flex; align-items:center; justify-content:center;
+  min-height:72vh; padding:24px 20px;
+}
+.login-card{
+  width:100%; max-width:420px;
+  background:var(--card); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:36px 30px;
+  text-align:center;
+}
+.login-card .escudo-grande{
+  width:72px; height:72px; object-fit:contain; margin:0 auto 16px; display:block;
+}
+.login-card h1{
+  font-family:var(--font-display); font-size:1.5rem; margin:0 0 6px;
+}
+.login-sub{
+  color:var(--ink-soft); font-size:.92rem; margin:0 0 24px;
+}
+#login-form{ display:flex; flex-direction:column; gap:14px; text-align:left; }
+
+/* ---------- Campos de formulario ---------- */
+.field-label{
+  display:block;
+  font-weight:700; font-size:.92rem;
+  color:var(--charcoal);
+  margin:0 0 8px;
+}
+.campo{
+  width:100%;
+  padding:15px 18px;
+  border-radius:14px;
+  border:1.5px solid var(--line);
+  background:var(--white);
+  color:var(--charcoal);
+  font-family:var(--font-body);
+  font-size:1.02rem;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
+  appearance:none;
+  -webkit-appearance:none;
+}
+.campo:focus{
+  outline:none;
+  border-color:var(--gold);
+  box-shadow:0 0 0 3px rgba(201,138,44,0.15);
+}
+select.campo{
+  /* flecha propia, para que se vea igual en todos los navegadores */
+  background-image:url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235C544A' stroke-width='2' stroke-linecap='round'%3e%3cpath d='M6 9l6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat:no-repeat;
+  background-position:right 16px center;
+  background-size:20px;
+  padding-right:48px;
+}
+.campo + .field-label{ margin-top:22px; }
+
+/* ---------- Botones ---------- */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  gap:8px; border:0; cursor:pointer;
+  font-family:var(--font-body); font-weight:700; font-size:1rem;
+  padding:15px 28px; border-radius:999px;
+  transition:transform .12s ease, opacity .15s ease;
+}
+.btn:active{ transform:scale(0.98); }
+.btn-primary{ background:var(--gold); color:var(--charcoal); }
+.btn-primary:hover{ opacity:.92; }
+.btn-block{ width:100%; }
+.btn-salir{
+  background:transparent; border:1.5px solid var(--line);
+  color:var(--ink-soft); font-weight:600; font-size:.9rem;
+  padding:10px 20px; border-radius:999px; cursor:pointer;
+  font-family:var(--font-body);
+}
+.btn-salir:hover{ border-color:var(--charcoal); color:var(--charcoal); }
+
+/* ---------- Barra superior de la app ---------- */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:14px; margin-bottom:24px;
+}
+.topbar-titulo{
+  font-family:var(--font-display); font-weight:700; font-size:1.2rem;
+}
+
+/* ---------- Tarjetas ---------- */
+.card{
+  background:var(--card); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:26px 24px; margin-bottom:22px;
+}
+.card-titulo{
+  font-family:var(--font-display); font-size:1.15rem;
+  margin:0 0 20px; padding-bottom:10px;
+  border-bottom:2px solid var(--gold);
+}
+.hint{
+  font-size:.88rem; color:var(--ink-soft); margin:0 0 18px;
+}
+
+/* ---------- Tarjetas de descarga (tocables) ---------- */
+.descargas-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+  gap:12px;
+  margin-top:18px;
+}
+.descarga-card{
+  display:flex; flex-direction:column; gap:6px;
+  text-align:left; cursor:pointer;
+  background:var(--white); border:1.5px solid var(--line);
+  border-left:5px solid var(--gold);
+  border-radius:14px; padding:18px 18px;
+  font-family:var(--font-body);
+  transition:transform .12s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.descarga-card:hover{
+  transform:translateY(-2px); box-shadow:var(--shadow);
+}
+.descarga-card:active{ transform:scale(0.98); }
+.descarga-card-titulo{
+  font-weight:700; font-size:.98rem; color:var(--charcoal);
+}
+.descarga-card-sub{
+  font-size:.8rem; color:var(--ink-soft); line-height:1.4;
+}
+.descarga-card-destacada{
+  border-left-color:var(--charcoal);
+  background:var(--charcoal);
+}
+.descarga-card-destacada .descarga-card-titulo{ color:var(--cream); }
+.descarga-card-destacada .descarga-card-sub{ color:#B9B0A0; }
+
+/* ---------- Resumen del alumno ---------- */
+.res-card{
+  background:var(--white); border-radius:14px;
+  border:1.5px solid var(--line);
+  padding:20px 22px; margin-bottom:16px;
+}
+.res-card h4{
+  font-family:var(--font-display); font-size:1.05rem;
+  margin:0 0 14px; color:var(--gold-dark);
+}
+.res-row{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:14px; padding:10px 0;
+  border-bottom:1px solid var(--line);
+  font-size:.93rem;
+}
+.res-row:last-child{ border-bottom:none; }
+.res-extra{ color:var(--ink-soft); font-weight:400; font-size:.85em; }
+.res-total{
+  margin-top:6px; padding-top:14px;
+  border-top:2px solid var(--charcoal); border-bottom:none;
+  font-weight:700; font-size:1rem;
+}
+.res-total strong{ color:var(--gold-dark); }
+
+.score-display{
+  background:var(--charcoal); color:var(--cream);
+  border-radius:var(--radius); padding:24px 26px;
+  text-align:center; font-size:1.12rem; font-weight:700;
+  margin-top:6px;
+}
+
+/* ---------- Estados y mensajes ---------- */
+.empty-inline{
+  padding:20px 0; text-align:center;
+  color:var(--ink-soft); font-size:.92rem;
+}
+.msg{
+  margin-top:14px; padding:12px 16px; border-radius:10px;
+  font-size:.9rem; font-weight:600; text-align:center;
+}
+.msg-ok{ background:rgba(107,122,94,.14); color:var(--sage); }
+.msg-error{ background:rgba(166,61,47,.10); color:var(--paprika); }
+.login-error{
+  background:rgba(166,61,47,.10); color:var(--paprika);
+  padding:12px 14px; border-radius:10px;
+  font-size:.88rem; margin:4px 0 0;
+}
+
+/* ---------- Pie ---------- */
+.site-footer{
+  border-top:1px solid var(--line);
+  padding:24px 0 36px;
+  text-align:center;
+}
+.site-footer p{
+  margin:0; font-size:.85rem; color:var(--ink-soft);
+}
+
+/* ---------- Pantallas anchas ---------- */
+@media (min-width:600px){
+  .brand-text{ font-size:1.3rem; }
+  .card{ padding:30px 28px; }
+}
